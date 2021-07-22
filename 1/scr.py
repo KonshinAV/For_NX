@@ -121,28 +121,28 @@ def main ():
         print(f'''Работа с приложением будет завершена, обнаружены файлы с существующими именами''')
         sys.exit()
     else:
-        if len(u_names_fdb) == len(sur_names_fdb):
-            u_names_txt.read_data()
-            sur_names_txt.read_data()
-            query = ''
-            for i, val in enumerate(u_names_txt.data):
-                # print(f"('{sur_names_txt.data[i].split(', ')[1]}', '{val.split(',')[1]}'),")
-                i_surname = sur_names_txt.data[i].split(', ')[1]
-                i_name = val.split(',')[1]
-                if ms_sql_server.check_exist_data_in_table(i_surname, i_name, 'Test.dbo.Table_1') is False:
-                    query = query + (f"('{i_surname}', '{i_name}'),")
-                # print (f"{i_surname} and {i_name} Exist in table = {ms_sql_server.check_exist_data_in_table(i_surname, i_name, 'Test.dbo.Table_1')}")
+        records_count = min(len(u_names_fdb), len(sur_names_fdb))
+        # if len(u_names_fdb) == len(sur_names_fdb):
+        u_names_txt.read_data()
+        sur_names_txt.read_data()
+        query = ''
+        ind = 0
+        while ind != records_count:
+            i_surname = sur_names_txt.data[ind].split(', ')[1]
+            i_name = u_names_txt.data[ind].split(',')[1]
+            # print (f"ind {ind}, surmane {i_surname}, name {i_name}")
+            if ms_sql_server.check_exist_data_in_table(i_surname, i_name, 'Test.dbo.Table_1') is False:
+                query = query + (f"('{i_surname}', '{i_name}'),")
+            # print (f"{i_surname} and {i_name} Exist in table = {ms_sql_server.check_exist_data_in_table(i_surname, i_name, 'Test.dbo.Table_1')}")
+            ind = ind+1
 
-            print(f"[+] Выгрузка сформирована")
-            # print (f"query = {query}")
-            if len(query) != 0:
-                ms_sql_server.write_data_to_table(table='Test.dbo.Table_1',columns='(SURNAME, NAME)',values=f"{query[0:-1]}")
-            else:
-                print('[-] Пустой запрос, нет уникальных данных для записи')
-            print(f"[+] Выгрузка данных на сервер {ms_sql_server.server}\\{ms_sql_server.database} завершена")
+        print(f"[+] Выгрузка сформирована")
+        # print (f"query = {query}")
+        if len(query) != 0:
+            ms_sql_server.write_data_to_table(table='Test.dbo.Table_1',columns='(SURNAME, NAME)',values=f"{query[0:-1]}")
         else:
-            print('[-] Выгрузка не сформирована, несоответствие объемов данных')
-            sys.exit()
+            print('[-] Пустой запрос, нет уникальных данных для записи')
+        print(f"[+] Выгрузка данных на сервер {ms_sql_server.server}\\{ms_sql_server.database} завершена")
 
 if __name__ == '__main__':
     main()
